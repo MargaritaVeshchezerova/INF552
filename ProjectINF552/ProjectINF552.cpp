@@ -12,11 +12,9 @@ using namespace std;
 
 int main()
 {
-	Mat img = imread("C:\\Users\\Margarita\\Downloads\\17974282_1386874394692192_2009764012_n.jpg");
-	cvNamedWindow("Exemple1", CV_WINDOW_AUTOSIZE);
-//	cvShowImage("Exemple1", img);
-	cvWaitKey(12);
-	cvReleaseImage(&img);
-	cvDestroyWindow("Blabla");
+	Mat img = imread("./Images/cathedral/d001.jpg");
+	namedWindow("Exemple1", CV_WINDOW_AUTOSIZE);
+	imshow("Exemple1", img);
+	waitKey(0);
 	return 0;
 }
