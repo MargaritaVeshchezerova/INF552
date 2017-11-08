@@ -15,7 +15,7 @@ int main()
 	Mat img = imread("C:\\Users\\Margarita\\Downloads\\17974282_1386874394692192_2009764012_n.jpg");
 	cvNamedWindow("Exemple1", CV_WINDOW_AUTOSIZE);
 //	cvShowImage("Exemple1", img);
-	cvWaitKey(1245);
+	cvWaitKey(125);
 	cvReleaseImage(&img);
 	cvDestroyWindow("Exemple1");
 	return 0;
