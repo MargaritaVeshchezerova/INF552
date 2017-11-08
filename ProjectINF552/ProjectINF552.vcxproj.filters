@@ -16,12 +16,20 @@
   </ItemGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />
+    <Text Include="maxflow\CHANGES.TXT" />
+    <Text Include="maxflow\README.TXT" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="targetver.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="maxflow\graph.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="maxflow\block.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -32,10 +40,21 @@
     <ClCompile Include="ProjectINF552.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="maxflow\graph.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Image Include="..\..\..\..\Downloads\TP1\fruits.jpg">
       <Filter>Resource Files</Filter>
     </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="maxflow\instances.inc">
+      <Filter>Header Files</Filter>
+    </None>
+    <None Include="maxflow\maxflow.inc">
+      <Filter>Header Files</Filter>
+    </None>
   </ItemGroup>
 </Project>
