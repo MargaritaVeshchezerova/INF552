@@ -102,13 +102,13 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>C:\Users\Margarita\opencv330-vc15\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\Polytechnique\Informatique\INF552\OpenCV\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>opencv_calib3d330d.lib;opencv_core330d.lib;opencv_dnn330d.lib;opencv_features2d330d.lib;opencv_flann330d.lib;opencv_highgui330d.lib;opencv_imgcodecs330d.lib;opencv_imgproc330d.lib;opencv_ml330d.lib;opencv_objdetect330d.lib;opencv_photo330d.lib;opencv_shape330d.lib;opencv_stitching330d.lib;opencv_superres330d.lib;opencv_video330d.lib;opencv_videoio330d.lib;opencv_videostab330d.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>C:\Users\Margarita\opencv330-vc15\x64\vc15\lib</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>D:\Polytechnique\Informatique\INF552\OpenCV\x64\vc15\lib</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
