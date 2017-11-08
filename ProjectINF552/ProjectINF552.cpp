@@ -17,6 +17,6 @@ int main()
 //	cvShowImage("Exemple1", img);
 	cvWaitKey(12);
 	cvReleaseImage(&img);
-	cvDestroyWindow("Exemple1");
+	cvDestroyWindow("Blabla");
 	return 0;
 }
