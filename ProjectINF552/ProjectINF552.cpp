@@ -13,10 +13,10 @@ using namespace std;
 int main()
 {
 	IplImage* img = cvLoadImage("C:\\Users\\Margarita\\Downloads\\17974282_1386874394692192_2009764012_n.jpg");
-	cvNamedWindow("Exemple1", CV_WINDOW_AUTOSIZE);
-//	cvShowImage("Exemple1", img);
+	cvNamedWindow("Blabla", CV_WINDOW_AUTOSIZE);
+//	cvShowImage("Blabla", img);
 	cvWaitKey(0);
 	cvReleaseImage(&img);
-	cvDestroyWindow("Exemple1");
+	cvDestroyWindow("Blabla");
 	return 0;
 }
