@@ -261,8 +261,8 @@ int main()
 		g.add_node(rows*cols);
 		for (int i = 0; i < rows; i++) {
 			for (int j = 0; j < cols; j++) {
-				float temp_curr = maximumLikelyhood(Label.at<int>(i, j), i, j, source, colorProbability);
-				float temp_alpha = maximumLikelyhood(alpha, i, j, source, colorProbability);
+				float temp_curr = maximumLikelyhood(Label.at<int>(i, j), i, j, source, colorProbability) - 0.99;
+				float temp_alpha = maximumLikelyhood(alpha, i, j, source, colorProbability)- 0.99;
 				cout << temp_curr << " " << temp_alpha << endl;
 				/*cout << maximumLikelyhood(Label.at<int>(i, j), i, j, source, colorProbability) << endl;
 				cout << maximumLikelyhood(alpha, i, j, source, colorProbability) << endl;*/
