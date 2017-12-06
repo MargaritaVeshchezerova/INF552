@@ -263,7 +263,7 @@ int main()
 			for (int j = 0; j < cols; j++) {
 				float temp_curr = maximumLikelyhood(Label.at<int>(i, j), i, j, source, colorProbability) - 0.99;
 				float temp_alpha = maximumLikelyhood(alpha, i, j, source, colorProbability)- 0.99;
-				cout << temp_curr << " " << temp_alpha << endl;
+				//cout << temp_curr << " " << temp_alpha << endl;
 				/*cout << maximumLikelyhood(Label.at<int>(i, j), i, j, source, colorProbability) << endl;
 				cout << maximumLikelyhood(alpha, i, j, source, colorProbability) << endl;*/
 				g.add_tweights(i*cols + j,10000*temp_curr, 10000*temp_alpha);
@@ -274,6 +274,7 @@ int main()
 				if (i > 0) {
 					float temp1 = computeX(alpha, i, j, Label.at<int>(i, j), i - 1, j, source); //je sais pas si ici on doit mette Label.at<int>(i,j) ... ca doit etre la que vient le label_opt = label/2
 					float temp2 = computeX(alpha, i, j, Label.at<int>(i-1, j), i - 1, j, source);
+					cout << temp2 << endl;
 					g.add_edge((i - 1)*cols + j, i*cols + j, 10* temp1,10* temp2);
 				}
 				if (j > 0) {
