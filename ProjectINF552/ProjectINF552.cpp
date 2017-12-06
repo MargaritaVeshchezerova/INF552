@@ -15,12 +15,12 @@ using namespace std;
 
 void testGCuts()
 {
-	Graph<int, int, int> g(/*estimated # of nodes*/ 2, /*estimated # of edges*/ 1);
+	Graph<float, float, float> g(/*estimated # of nodes*/ 2, /*estimated # of edges*/ 1);
 	g.add_node(2);
 	g.add_tweights(0,   /* capacities */  1.2,0);
 	g.add_tweights(1,   /* capacities */  0, 1.2);
 	g.add_edge(0, 1,    /* capacities */  3, 3.123);
-	int flow = g.maxflow();
+	float flow = g.maxflow();
 	cout << "Flow = " << flow << endl;
 	for (int i = 0; i<2; i++)
 		if (g.what_segment(i) == Graph<int, int, int>::SOURCE)
@@ -257,16 +257,16 @@ int main()
 	cout << "nice one" << endl;
 
 	for (int alpha = 1; alpha < n;alpha ++) { //loop over all possible labels
-		Graph<int, int, int> g(/*estimated # of nodes*/ rows*cols, /*estimated # of edges*/ rows*(cols-1) + cols*(rows-1));
+		Graph<float, float, float> g(/*estimated # of nodes*/ rows*cols, /*estimated # of edges*/ rows*(cols-1) + cols*(rows-1));
 		g.add_node(rows*cols);
 		for (int i = 0; i < rows; i++) {
 			for (int j = 0; j < cols; j++) {
-				float temp_curr = maximumLikelyhood(Label.at<int>(i, j), i, j, source, colorProbability) - 0.99;
-				float temp_alpha = maximumLikelyhood(alpha, i, j, source, colorProbability)- 0.99;
-				//cout << temp_curr << " " << temp_alpha << endl;
+				float temp_curr = maximumLikelyhood(Label.at<int>(i, j), i, j, source, colorProbability);
+				float temp_alpha = maximumLikelyhood(alpha, i, j, source, colorProbability);
+				//cout << 100000*temp_curr << " " << 10000*temp_alpha << endl;
 				/*cout << maximumLikelyhood(Label.at<int>(i, j), i, j, source, colorProbability) << endl;
 				cout << maximumLikelyhood(alpha, i, j, source, colorProbability) << endl;*/
-				g.add_tweights(i*cols + j,10000*temp_curr, 10000*temp_alpha);
+				g.add_tweights(i*cols + j,1000*temp_curr,1000*temp_alpha);
 			}
 		}
 		for (int i = 0; i < rows; i++) {
@@ -274,18 +274,17 @@ int main()
 				if (i > 0) {
 					float temp1 = computeX(alpha, i, j, Label.at<int>(i, j), i - 1, j, source); //je sais pas si ici on doit mette Label.at<int>(i,j) ... ca doit etre la que vient le label_opt = label/2
 					float temp2 = computeX(alpha, i, j, Label.at<int>(i-1, j), i - 1, j, source);
-					cout << temp2 << endl;
-					g.add_edge((i - 1)*cols + j, i*cols + j, 10* temp1,10* temp2);
+					g.add_edge((i - 1)*cols + j, i*cols + j,0,0);
 				}
 				if (j > 0) {
 					float temp1 = computeX(alpha, i, j, Label.at<int>(i, j ), i, j - 1, source);
 					float temp2 = computeX(alpha, i, j, Label.at<int>(i, j-1), i, j - 1, source);
 
-					g.add_edge(i*cols + j - 1, i*cols + j, temp1, temp2);
+					g.add_edge(i*cols + j - 1, i*cols + j, 0, 0);
 				}
 			}
 		}
-		int flow = g.maxflow();
+		float flow = g.maxflow();
 		cout << "Flow = " << flow << endl;
 		for (int i = 0; i < rows*cols; i++) {
 			if (g.what_segment(i) == Graph<int, int, int>::SINK) { //source : we keep label sink : we change label to alpha
