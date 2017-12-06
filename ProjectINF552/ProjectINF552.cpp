@@ -52,9 +52,9 @@ double computeDesignatedColorDataPenalty(int alpha, vector<Mat>& source, Mat& La
 double maximumLikelyhood(int alpha, int i, int j, vector<Mat>& source, Mat& colorProbability) {
 	
 	double probability = 1.;
-	for (int i = 0; i < 3; i++) {
-		int index =int(((float) Scalar(source.at(alpha).at<Vec3b>(i, j)).val[i]) / colorProbability.cols);
-		probability *= colorProbability.at<float>(i, index);
+	for (int k= 0; k< 3; k++) {
+		int index =int(((float) Scalar(source.at(alpha).at<Vec3b>(i, j)).val[k]) / colorProbability.cols);
+		probability *= colorProbability.at<float>(k, index);
 	}
 	return(1 - probability);
 }
@@ -167,9 +167,9 @@ int main()
 
 
 
-	int rows = source.at(0).rows;
-	int cols = source.at(0).cols;
-	Mat colorProbability(3, bin,CV_32F); //pour chaque couleur on fait un histogramme avec bin nombre de colonnes (on divises 255 par bin)
+	int rows = source[0].rows;
+	int cols = source[0].cols;
+	Mat colorProbability = Mat(3, bin,CV_32F); //pour chaque couleur on fait un histogramme avec bin nombre de colonnes (on divises 255 par bin)
 	for (int i = 0; i < 3; i++) {
 		for (int j = 0; j < bin; j++) {
 			colorProbability.at<float>(i, j) = 0.; //for per-pixel maximum likelihood
@@ -190,7 +190,7 @@ int main()
 					//cout << Scalar(source.at(img).at<Vec3b>(i, j)).val[1] << endl;
 					//cout << Scalar(source.at(img).at<Vec3b>(i, j)).val[2] << endl;
 					//cout << "///////////////////////////////////////////////" << endl;
-					if ((float)Scalar(source.at(img).at<Vec3b>(i, j)).val[0] <= (float((b + 1) * 255)) / bin) { //en fait ici il ne faut selectionner que les parties prises je pense, je me suis trompe
+					if ((float)Scalar(source[img].at<Vec3b>(i, j)).val[0] <= (float((b + 1) * 255)) / bin) { //en fait ici il ne faut selectionner que les parties prises je pense, je me suis trompe
 						colorProbability.at<float>(0, b) += 1.;
 						break;
 					}
@@ -199,7 +199,7 @@ int main()
 					}
 				}
 				for (int b = 0; b < bin; b++) {
-					if ((float)Scalar(source.at(img).at<Vec3b>(i, j)).val[1] <= (float((b + 1) * 255)) / bin) {
+					if ((float)Scalar(source[img].at<Vec3b>(i, j)).val[1] <= (float((b + 1) * 255)) / bin) {
 						colorProbability.at<float>(1, b) += 1.;
 						break;
 					}
@@ -224,19 +224,19 @@ int main()
 	for (int j = 0; j < bin; j++) {
 		total += colorProbability.at<float>(0, j);
 	}
-	cout << total << " vs " << 3 * n*rows*cols<<endl;
+	cout << total << " vs " <<  n*rows*cols<<endl;
 
 	total = 0;
 	for (int j = 0; j < bin; j++) {
 		total += colorProbability.at<float>(1, j);
 	}
-	cout << total << " vs " << 3 * n*rows*cols << endl;
+	cout << total << " vs " <<  n*rows*cols << endl;
 
 	total = 0;
 	for (int j = 0; j < bin; j++) {
 		total += colorProbability.at<float>(2, j);
 	}
-	cout << total << " vs " << 3 * n*rows*cols << endl;
+	cout << total << " vs " <<  n*rows*cols << endl;
 
 	for (int color = 0; color < 3; color++) { //c'est necessaire pour maximumLikelyhood
 		for (int b = 0; b < bin; b++) {
@@ -247,8 +247,8 @@ int main()
 
 	cout << "done with colorProbability" << endl;
 
-	Mat Label(rows, cols, CV_32SC1); //on veut stocker les label des differents trucs; comme ca l'image est le pixel de l'image caracterise par son label
-	Mat result = source.at(0).clone(); //Nous allons stocker l'image resultante
+	Mat Label = Mat(rows, cols, CV_32SC1); //on veut stocker les label des differents trucs; comme ca l'image est le pixel de l'image caracterise par son label
+	Mat result = source[0].clone(); //Nous allons stocker l'image resultante
 	for (int i = 0; i < rows; i++) {
 		for (int j = 0; j < cols; j++) {
 			Label.at<int>(i, j) = 0; // l'image resultat est d'abord initialiser a l'image zero
@@ -259,8 +259,10 @@ int main()
 	for (int alpha = 1; alpha < n;alpha ++) { //loop over all possible labels
 		Graph<float, float, float> g(/*estimated # of nodes*/ rows*cols, /*estimated # of edges*/ rows*(cols-1) + cols*(rows-1));
 		g.add_node(rows*cols);
-		for (int i = 0; i < rows; i++) {
-			for (int j = 0; j < cols; j++) {
+		for (int i = 0; i < rows; i++) 
+		{
+			for (int j = 0; j < cols; j++) 
+			{
 				float temp_curr = maximumLikelyhood(Label.at<int>(i, j), i, j, source, colorProbability);
 				float temp_alpha = maximumLikelyhood(alpha, i, j, source, colorProbability);
 				//cout << 100000*temp_curr << " " << 10000*temp_alpha << endl;
@@ -274,20 +276,19 @@ int main()
 				if (i > 0) {
 					float temp1 = computeX(alpha, i, j, Label.at<int>(i, j), i - 1, j, source); //je sais pas si ici on doit mette Label.at<int>(i,j) ... ca doit etre la que vient le label_opt = label/2
 					float temp2 = computeX(alpha, i, j, Label.at<int>(i-1, j), i - 1, j, source);
-					g.add_edge((i - 1)*cols + j, i*cols + j,0,0);
+					g.add_edge((i - 1)*cols + j, i*cols + j,temp1/10,temp2/10);
 				}
 				if (j > 0) {
 					float temp1 = computeX(alpha, i, j, Label.at<int>(i, j ), i, j - 1, source);
 					float temp2 = computeX(alpha, i, j, Label.at<int>(i, j-1), i, j - 1, source);
-
-					g.add_edge(i*cols + j - 1, i*cols + j, 0, 0);
+					g.add_edge(i*cols + j - 1, i*cols + j, temp1/10, temp2/10);
 				}
 			}
 		}
 		float flow = g.maxflow();
 		cout << "Flow = " << flow << endl;
 		for (int i = 0; i < rows*cols; i++) {
-			if (g.what_segment(i) == Graph<int, int, int>::SINK) { //source : we keep label sink : we change label to alpha
+			if (g.what_segment(i) == Graph<int, int, int>::SOURCE) { //source : we keep label sink : we change label to alpha
 				// cout << "huh" << endl;
 				int ligne = i / cols;
 				int colonne = i%cols;
@@ -303,7 +304,7 @@ int main()
 			result.at<Vec3b>(i, j) = source.at(Label.at<int>(i, j)).at<Vec3b>(i, j);
 		}
 	}
-	namedWindow("result");
+	namedWindow("result",WINDOW_NORMAL | WINDOW_KEEPRATIO);
 	imshow("result", result);
 	//
 	//for (int i = 0; i < rows; i++) {
