@@ -75,24 +75,27 @@ double computeX(int alpha1, int i1, int j1,int alpha2, int i2, int j2, vector<Ma
 		return 0.;
 	}
 	else {
-		return((norm(Scalar(source.at(alpha1).at<Vec3b>(i1, j1)) - Scalar(source.at(alpha2).at<Vec3b>(i1, j1))) + norm(Scalar(source.at(alpha1).at<Vec3b>(i2, j2)) - Scalar(source.at(alpha2).at<Vec3b>(i2, j2)))));
+		return(sqrt(norm(Scalar(source.at(alpha1).at<Vec3b>(i1, j1)) - Scalar(source.at(alpha2).at<Vec3b>(i1, j1))) + norm(Scalar(source.at(alpha1).at<Vec3b>(i2, j2)) - Scalar(source.at(alpha2).at<Vec3b>(i2, j2)))));
 	}
 }
 
 double computeY(int alpha1, int i1, int j1, int alpha2, int i2, int j2, vector<Mat>&source) {
-	if (alpha1 == alpha2) {
+	if (alpha1 == alpha2 || i1 <= 0 || i1 >= source.at(0).rows - 1 || i2 <= 0 || i2 >= source.at(0).rows - 1 || j1 <= 0 || j1 >= source.at(0).cols - 1 || j2 <= 0 || j2 >= source.at(0).cols - 1) {
 		return 0.;
 	}
 	else {
-		Scalar G_i1_alpha1 = (i1 == 0 || i1 == source.at(0).rows - 1 ? 0. : (Scalar(source.at(alpha1).at<Vec3b>(i1 + 1, j1)) - Scalar(source.at(alpha1).at<Vec3b>(i1 - 1, j1))) / 2);
-		Scalar G_i2_alpha1 = (i2 == 0 || i2 == source.at(0).rows - 1 ? 0. : (Scalar(source.at(alpha1).at<Vec3b>(i2 + 1, j1)) - Scalar(source.at(alpha1).at<Vec3b>(i2 - 1, j1))) / 2);
-		Scalar G_i1_alpha2 = (i1 == 0 || i1 == source.at(0).rows - 1 ? 0. : (Scalar(source.at(alpha2).at<Vec3b>(i1 + 1, j1)) - Scalar(source.at(alpha2).at<Vec3b>(i1 - 1, j1))) / 2);
-		Scalar G_i2_alpha2 = (i2 == 0 || i2 == source.at(0).rows - 1 ? 0. : (Scalar(source.at(alpha2).at<Vec3b>(i2 + 1, j1)) - Scalar(source.at(alpha2).at<Vec3b>(i2 - 1, j1))) / 2);
-		Scalar G_j1_alpha1 = (j1 == 0 || j1 == source.at(0).cols - 1 ? 0. : (Scalar(source.at(alpha1).at<Vec3b>(i1 , j1 + 1)) - Scalar(source.at(alpha1).at<Vec3b>(i1 , j1 - 1))) / 2);
-		Scalar G_j2_alpha1 = (j2 == 0 || j2 == source.at(0).cols - 1 ? 0. : (Scalar(source.at(alpha1).at<Vec3b>(i2 , j1 + 1)) - Scalar(source.at(alpha1).at<Vec3b>(i2 , j1 - 1))) / 2);
-		Scalar G_j1_alpha2 = (j1 == 0 || j1 == source.at(0).cols - 1 ? 0. : (Scalar(source.at(alpha2).at<Vec3b>(i1 , j1 + 1)) - Scalar(source.at(alpha2).at<Vec3b>(i1 , j1 - 1))) / 2);
-		Scalar G_j2_alpha2 = (j2 == 0 || j2 == source.at(0).cols - 1 ? 0. : (Scalar(source.at(alpha2).at<Vec3b>(i2 , j1 + 1)) - Scalar(source.at(alpha2).at<Vec3b>(i2 , j1 - 1))) / 2);
-		return(norm(G_i1_alpha1 - G_i1_alpha2) + norm(G_j1_alpha1 - G_j1_alpha2) + norm(G_i2_alpha1 - G_i2_alpha2) + norm(G_j2_alpha1 - G_j2_alpha2));
+		//cout << "hey" << endl;
+		//cout << i1 << " " << i2 << " " << j1 << " " << j2 << " " << endl;
+		Scalar G_i1_alpha1 = (Scalar(source.at(alpha1).at<Vec3b>(i1 + 1, j1)) - Scalar(source.at(alpha1).at<Vec3b>(i1 - 1, j1))) / 2;
+		Scalar G_i2_alpha1 = (Scalar(source.at(alpha1).at<Vec3b>(i2 + 1, j1)) - Scalar(source.at(alpha1).at<Vec3b>(i2 - 1, j1))) / 2;
+		Scalar G_i1_alpha2 = (Scalar(source.at(alpha2).at<Vec3b>(i1 + 1, j1)) - Scalar(source.at(alpha2).at<Vec3b>(i1 - 1, j1))) / 2;
+		Scalar G_i2_alpha2 = (Scalar(source.at(alpha2).at<Vec3b>(i2 + 1, j1)) - Scalar(source.at(alpha2).at<Vec3b>(i2 - 1, j1))) / 2;
+		Scalar G_j1_alpha1 = (Scalar(source.at(alpha1).at<Vec3b>(i1 , j1 + 1)) - Scalar(source.at(alpha1).at<Vec3b>(i1 , j1 - 1))) / 2;
+		Scalar G_j2_alpha1 = (Scalar(source.at(alpha1).at<Vec3b>(i2 , j1 + 1)) - Scalar(source.at(alpha1).at<Vec3b>(i2 , j1 - 1))) / 2;
+		Scalar G_j1_alpha2 = (Scalar(source.at(alpha2).at<Vec3b>(i1 , j1 + 1)) - Scalar(source.at(alpha2).at<Vec3b>(i1 , j1 - 1))) / 2;
+		Scalar G_j2_alpha2 = (Scalar(source.at(alpha2).at<Vec3b>(i2 , j1 + 1)) - Scalar(source.at(alpha2).at<Vec3b>(i2 , j1 - 1))) / 2;
+		//cout << "nice" << endl;
+		return(sqrt(norm(G_i1_alpha1 - G_i1_alpha2) + norm(G_j1_alpha1 - G_j1_alpha2) + norm(G_i2_alpha1 - G_i2_alpha2) + norm(G_j2_alpha1 - G_j2_alpha2)));
 	}
 }
 
@@ -133,6 +136,27 @@ int main()
 	
 	int n = 5; //nombre d'images source afin de creer la nouvelle image
 	int bin = 20;
+	float lambda_X = 1./5000; 
+	float lambda_Y = 1./3000;
+
+	/*
+	lambda = 10000 pour computeX
+
+	float lambda_X = 1./15000; 
+	float lambda_Y = 1./1000;
+	
+	float lambda_X = 1./1000;
+	float lambda_Y = 1./5000;
+
+	float lambda_X = 1./3000;
+	float lambda_Y = 1./5000;
+
+	float lambda_X = 1./3000; il y parapluie jaune et anorak rouge
+	float lambda_Y = 1./3000;
+
+	float lambda_X = 1./3000; parapluie bleu, casquette beige, blonde anorak rouge
+	float lambda_Y = 1./1500;
+	*/
 
 	for (int i = 0; i < n; i++) {
 		String location = "./Images/cathedral/d00" + to_string(i+1) + ".jpg";
@@ -254,58 +278,78 @@ int main()
 			Label.at<int>(i, j) = 0; // l'image resultat est d'abord initialiser a l'image zero
 		}
 	}
-	cout << "nice one" << endl;
+	namedWindow("previous_result", WINDOW_NORMAL | WINDOW_KEEPRATIO);
+	namedWindow("current_result", WINDOW_NORMAL | WINDOW_KEEPRATIO);
+	imshow("previous_result", result);
+	float previous_max_flow = 0.;
+	float current_max_flow = 0.;
+	int lab = 1;
+	while(previous_max_flow > current_max_flow) { //loop over all possible labels
+		cout << "Start graph cut" << endl;
+		for (int alpha = 0; alpha < n; alpha++) {
 
-	for (int alpha = 1; alpha < n;alpha ++) { //loop over all possible labels
-		Graph<float, float, float> g(/*estimated # of nodes*/ rows*cols, /*estimated # of edges*/ rows*(cols-1) + cols*(rows-1));
-		g.add_node(rows*cols);
-		for (int i = 0; i < rows; i++) 
-		{
-			for (int j = 0; j < cols; j++) 
+			Graph<float, float, float> g(/*estimated # of nodes*/ rows*cols, /*estimated # of edges*/ rows*(cols - 1) + cols*(rows - 1));
+			g.add_node(rows*cols);
+			for (int i = 0; i < rows; i++)
 			{
-				float temp_curr = maximumLikelyhood(Label.at<int>(i, j), i, j, source, colorProbability);
-				float temp_alpha = maximumLikelyhood(alpha, i, j, source, colorProbability);
-				//cout << 100000*temp_curr << " " << 10000*temp_alpha << endl;
-				/*cout << maximumLikelyhood(Label.at<int>(i, j), i, j, source, colorProbability) << endl;
-				cout << maximumLikelyhood(alpha, i, j, source, colorProbability) << endl;*/
-				g.add_tweights(i*cols + j,1000*temp_curr,1000*temp_alpha);
+				for (int j = 0; j < cols; j++)
+				{
+					float temp_curr = maximumLikelyhood(Label.at<int>(i, j), i, j, source, colorProbability);
+					float temp_alpha = maximumLikelyhood(alpha, i, j, source, colorProbability);
+					//cout << 100000*temp_curr << " " << 10000*temp_alpha << endl;
+					/*cout << maximumLikelyhood(Label.at<int>(i, j), i, j, source, colorProbability) << endl;
+					cout << maximumLikelyhood(alpha, i, j, source, colorProbability) << endl;*/
+					g.add_tweights(i*cols + j, temp_curr, temp_alpha);
+				}
+			}
+			for (int i = 0; i < rows; i++) {
+				for (int j = 0; j < cols; j++) {
+					if (i > 0) {
+						//float temp1 = computeX(alpha, i, j, Label.at<int>(i, j), i - 1, j, source); //je sais pas si ici on doit mette Label.at<int>(i,j) ... ca doit etre la que vient le label_opt = label/2
+						float temp1 = lambda_Y *computeY(alpha, i, j, Label.at<int>(i, j), i - 1, j, source) + lambda_X *computeX(alpha, i, j, Label.at<int>(i, j), i - 1, j, source);
+						//float temp2 = computeX(alpha, i, j, Label.at<int>(i-1, j), i - 1, j, source);
+						float temp2 = lambda_Y *computeY(alpha, i, j, Label.at<int>(i - 1, j), i - 1, j, source) + lambda_X *computeX(alpha, i, j, Label.at<int>(i - 1, j), i - 1, j, source);
+						g.add_edge((i - 1)*cols + j, i*cols + j, temp1, temp2);
+					}
+					if (j > 0) {
+						//float temp1 = computeX(alpha, i, j, Label.at<int>(i, j ), i, j - 1, source);
+						float temp1 = lambda_Y *computeY(alpha, i, j, Label.at<int>(i, j), i, j - 1, source) + lambda_X *computeX(alpha, i, j, Label.at<int>(i, j), i, j - 1, source);
+						//float temp2 = computeX(alpha, i, j, Label.at<int>(i, j-1), i, j - 1, source);
+						float temp2 = lambda_Y *computeY(alpha, i, j, Label.at<int>(i, j - 1), i, j - 1, source) + lambda_X *computeX(alpha, i, j, Label.at<int>(i, j - 1), i, j - 1, source);
+						g.add_edge(i*cols + j - 1, i*cols + j, temp1, temp2);
+					}
+				}
+			}
+			float flow = g.maxflow();
+			if (alpha == n - 1) {
+				previous_max_flow = current_max_flow;
+				current_max_flow = flow;
+			}
+			cout << "Flow = " << flow << endl;
+			for (int i = 0; i < rows*cols; i++) {
+				if (g.what_segment(i) == Graph<float, float, float>::SOURCE) { //source : we keep label sink : we change label to alpha
+					// cout << "huh" << endl;
+					int ligne = i / cols;
+					int colonne = i%cols;
+					// cout << ligne<<" "<<colonne << endl;
+
+					Label.at<int>(ligne, colonne) = alpha;
+				}
 			}
 		}
+		cout << "display end" << endl;
 		for (int i = 0; i < rows; i++) {
 			for (int j = 0; j < cols; j++) {
-				if (i > 0) {
-					float temp1 = computeX(alpha, i, j, Label.at<int>(i, j), i - 1, j, source); //je sais pas si ici on doit mette Label.at<int>(i,j) ... ca doit etre la que vient le label_opt = label/2
-					float temp2 = computeX(alpha, i, j, Label.at<int>(i-1, j), i - 1, j, source);
-					g.add_edge((i - 1)*cols + j, i*cols + j,temp1/10,temp2/10);
-				}
-				if (j > 0) {
-					float temp1 = computeX(alpha, i, j, Label.at<int>(i, j ), i, j - 1, source);
-					float temp2 = computeX(alpha, i, j, Label.at<int>(i, j-1), i, j - 1, source);
-					g.add_edge(i*cols + j - 1, i*cols + j, temp1/10, temp2/10);
-				}
+				result.at<Vec3b>(i, j) = source.at(Label.at<int>(i, j)).at<Vec3b>(i, j);
 			}
 		}
-		float flow = g.maxflow();
-		cout << "Flow = " << flow << endl;
-		for (int i = 0; i < rows*cols; i++) {
-			if (g.what_segment(i) == Graph<int, int, int>::SOURCE) { //source : we keep label sink : we change label to alpha
-				// cout << "huh" << endl;
-				int ligne = i / cols;
-				int colonne = i%cols;
-				// cout << ligne<<" "<<colonne << endl;
-
-				Label.at<int>(ligne, colonne) = alpha;
-			}
-		}
+		
+		cout << "end graph cut" << endl;
+		imshow("current_result", result);
+		waitKey();
+		imshow("previous_result", result);
 	}
-	cout << "display end" << endl;
-	for (int i = 0; i < rows; i++) {
-		for (int j = 0; j < cols; j++) {
-			result.at<Vec3b>(i, j) = source.at(Label.at<int>(i, j)).at<Vec3b>(i, j);
-		}
-	}
-	namedWindow("result",WINDOW_NORMAL | WINDOW_KEEPRATIO);
-	imshow("result", result);
+	
 	//
 	//for (int i = 0; i < rows; i++) {
 	//	for (int j = 0; j < cols; j++) {
