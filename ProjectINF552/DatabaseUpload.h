@@ -8,3 +8,5 @@
 
 using namespace std;
 using namespace cv;
+
+void loadDatabase(char* directory, vector<Mat>& images);

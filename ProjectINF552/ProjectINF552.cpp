@@ -3,8 +3,9 @@
 #include "stdafx.h"
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
-#include "maxflow2/graph.h"
+#include "maxflow/graph.h"
 #include <iostream>
+#include "DatabaseUpload.h"
 
 using namespace cv;
 using namespace std;
@@ -15,15 +16,14 @@ using namespace std;
 
 void testGCuts()
 {
-	Graph<float, float, float> g(/*estimated # of nodes*/ 2, /*estimated # of edges*/ 1);
+	Graph<double, double, double> g(/*estimated # of nodes*/ 2, /*estimated # of edges*/ 1);
 	g.add_node(2);
-	g.add_tweights(0,   /* capacities */  1.2,0);
-	g.add_tweights(1,   /* capacities */  0, 1.2);
-	g.add_edge(0, 1,    /* capacities */  3, 3.123);
-	float flow = g.maxflow();
+	g.add_tweights(0,   /* capacities */  1,2);
+	g.add_tweights(1,   /* capacities */  0, 2);
+	double flow = g.maxflow();
 	cout << "Flow = " << flow << endl;
 	for (int i = 0; i<2; i++)
-		if (g.what_segment(i) == Graph<int, int, int>::SOURCE)
+		if (g.what_segment(i) == Graph<double, double, double>::SOURCE)
 			cout << i << " is in the SOURCE set" << endl;
 		else
 			cout << i << " is in the SINK set" << endl;
@@ -53,8 +53,8 @@ double maximumLikelyhood(int alpha, int i, int j, vector<Mat>& source, Mat& colo
 	
 	double probability = 1.;
 	for (int k= 0; k< 3; k++) {
-		int index =int(((float) Scalar(source.at(alpha).at<Vec3b>(i, j)).val[k]) / colorProbability.cols);
-		probability *= colorProbability.at<float>(k, index);
+		int index =int(((double) Scalar(source.at(alpha).at<Vec3b>(i, j)).val[k]) / colorProbability.cols);
+		probability *= colorProbability.at<double>(k, index);
 	}
 	return(1 - probability);
 }
@@ -75,7 +75,7 @@ double computeX(int alpha1, int i1, int j1,int alpha2, int i2, int j2, vector<Ma
 		return 0.;
 	}
 	else {
-		return(sqrt(norm(Scalar(source.at(alpha1).at<Vec3b>(i1, j1)) - Scalar(source.at(alpha2).at<Vec3b>(i1, j1))) + norm(Scalar(source.at(alpha1).at<Vec3b>(i2, j2)) - Scalar(source.at(alpha2).at<Vec3b>(i2, j2)))));
+		return((norm(Scalar(source.at(alpha1).at<Vec3b>(i1, j1)) - Scalar(source.at(alpha2).at<Vec3b>(i1, j1))) + norm(Scalar(source.at(alpha1).at<Vec3b>(i2, j2)) - Scalar(source.at(alpha2).at<Vec3b>(i2, j2)))));
 	}
 }
 
@@ -95,7 +95,7 @@ double computeY(int alpha1, int i1, int j1, int alpha2, int i2, int j2, vector<M
 		Scalar G_j1_alpha2 = (Scalar(source.at(alpha2).at<Vec3b>(i1 , j1 + 1)) - Scalar(source.at(alpha2).at<Vec3b>(i1 , j1 - 1))) / 2;
 		Scalar G_j2_alpha2 = (Scalar(source.at(alpha2).at<Vec3b>(i2 , j1 + 1)) - Scalar(source.at(alpha2).at<Vec3b>(i2 , j1 - 1))) / 2;
 		//cout << "nice" << endl;
-		return(sqrt(norm(G_i1_alpha1 - G_i1_alpha2) + norm(G_j1_alpha1 - G_j1_alpha2) + norm(G_i2_alpha1 - G_i2_alpha2) + norm(G_j2_alpha1 - G_j2_alpha2)));
+		return((norm(G_i1_alpha1 - G_i1_alpha2) + norm(G_j1_alpha1 - G_j1_alpha2) + norm(G_i2_alpha1 - G_i2_alpha2) + norm(G_j2_alpha1 - G_j2_alpha2)));
 	}
 }
 
@@ -128,61 +128,59 @@ void draw_circle(int event, int x, int y, int, void* param) {
 }
 
 
-int main()
+int main(int argc, char** argv)
 {
 	vector<Mat> source;
 	vector<int> drawing;
 	vector<MouseParams> mps;
 	
-	int n = 5; //nombre d'images source afin de creer la nouvelle image
+	testGCuts();
+
+
+	 //nombre d'images source afin de creer la nouvelle image
 	int bin = 20;
-	float lambda_X = 1./5000; 
-	float lambda_Y = 1./3000;
+	double lambda_X = 1./30000.; 
+	double lambda_Y = 1./30000;
 
 	/*
 	lambda = 10000 pour computeX
 
-	float lambda_X = 1./15000; 
-	float lambda_Y = 1./1000;
+	double lambda_X = 1./15000; 
+	double lambda_Y = 1./1000;
 	
-	float lambda_X = 1./1000;
-	float lambda_Y = 1./5000;
+	double lambda_X = 1./1000;
+	double lambda_Y = 1./5000;
 
-	float lambda_X = 1./3000;
-	float lambda_Y = 1./5000;
+	double lambda_X = 1./3000;
+	double lambda_Y = 1./5000;
 
-	float lambda_X = 1./3000; il y parapluie jaune et anorak rouge
-	float lambda_Y = 1./3000;
+	double lambda_X = 1./3000; il y parapluie jaune et anorak rouge
+	double lambda_Y = 1./3000;
 
-	float lambda_X = 1./3000; parapluie bleu, casquette beige, blonde anorak rouge
-	float lambda_Y = 1./1500;
+	double lambda_X = 1./3000; parapluie bleu, casquette beige, blonde anorak rouge
+	double lambda_Y = 1./1500;
 	*/
 
-	for (int i = 0; i < n; i++) {
-		String location = "./Images/cathedral/d00" + to_string(i+1) + ".jpg";
-		Mat img = imread(location);
-		//namedWindow("d00" + to_string(i+1));
-		//imshow("d00" + to_string(i+1), img);
-		source.push_back(img);
-		drawing.push_back(0);
-	}
+	vector<Mat>* images = new vector<Mat>();
+	loadDatabase(argv[1], *images);
+	int n = images->size();
 
 	/*for (int i = 0; i < n; i++) {
-		MouseParams* mp = new MouseParams(&source.at(i), &drawing.at(i));
+		MouseParams* mp = new MouseParams(*images.at(i), &drawing.at(i));
 		setMouseCallback("d00" + to_string(i + 1), draw_circle, (void*)mp);
 	}*/
 
 	//for (int i = 0; i < 300; i++) {
 	//	for (int j = 0; j < 300; j++) {
-	//		source.at(0).at<Vec3b>(i, j) = Vec3b(255, 255, 255);
-	//		imshow("d001", source.at(0));
+	//		*images.at(0).at<Vec3b>(i, j) = Vec3b(255, 255, 255);
+	//		imshow("d001", *images.at(0));
 	//	}
 	//}
 
 	/*while (waitKey(20) != 27)
 	{
 		for (int i = 0; i < n; i++) {
-			imshow("d00" + to_string(i + 1), source.at(i));
+			imshow("d00" + to_string(i + 1), *images.at(i));
 		}
 	}*/
 
@@ -191,12 +189,12 @@ int main()
 
 
 
-	int rows = source[0].rows;
-	int cols = source[0].cols;
-	Mat colorProbability = Mat(3, bin,CV_32F); //pour chaque couleur on fait un histogramme avec bin nombre de colonnes (on divises 255 par bin)
+	int rows = (*images)[0].rows;
+	int cols = (*images)[0].cols;
+	Mat colorProbability = Mat(3, bin,CV_64F); //pour chaque couleur on fait un histogramme avec bin nombre de colonnes (on divises 255 par bin)
 	for (int i = 0; i < 3; i++) {
 		for (int j = 0; j < bin; j++) {
-			colorProbability.at<float>(i, j) = 0.; //for per-pixel maximum likelihood
+			colorProbability.at<double>(i, j) = 0.; //for per-pixel maximum likelihood
 		}
 	}
 	cout << "Beginning pixel histogram" << endl;
@@ -207,72 +205,72 @@ int main()
 		for (int i = 0; i < rows; i++) {
 			for (int j = 0; j < cols; j++) {
 				for (int b = 0; b < bin; b++) {
-					//cout << source.at(img).at<Vec3b>(i, j) << endl;
-					//cout << ((float)Scalar(source.at(img).at<Vec3b>(i, j)).val[0] < 255) << endl;
-					//cout << ((float)Scalar(source.at(img).at<Vec3b>(i, j)).val[0] < 0) << endl;
+					//cout << *images.at(img).at<Vec3b>(i, j) << endl;
+					//cout << ((double)Scalar(*images.at(img).at<Vec3b>(i, j)).val[0] < 255) << endl;
+					//cout << ((double)Scalar(*images.at(img).at<Vec3b>(i, j)).val[0] < 0) << endl;
 
-					//cout << Scalar(source.at(img).at<Vec3b>(i, j)).val[1] << endl;
-					//cout << Scalar(source.at(img).at<Vec3b>(i, j)).val[2] << endl;
+					//cout << Scalar(*images.at(img).at<Vec3b>(i, j)).val[1] << endl;
+					//cout << Scalar(*images.at(img).at<Vec3b>(i, j)).val[2] << endl;
 					//cout << "///////////////////////////////////////////////" << endl;
-					if ((float)Scalar(source[img].at<Vec3b>(i, j)).val[0] <= (float((b + 1) * 255)) / bin) { //en fait ici il ne faut selectionner que les parties prises je pense, je me suis trompe
-						colorProbability.at<float>(0, b) += 1.;
+					if ((double)Scalar((*images)[img].at<Vec3b>(i, j)).val[0] <= (double((b + 1) * 255)) / bin) { //en fait ici il ne faut selectionner que les parties prises je pense, je me suis trompe
+						colorProbability.at<double>(0, b) += 1.;
 						break;
 					}
 					if (b == bin - 1) {
-						cout << Scalar(source.at(img).at<Vec3b>(i, j)).val[0] << endl;
+						cout << Scalar((*images).at(img).at<Vec3b>(i, j)).val[0] << endl;
 					}
 				}
 				for (int b = 0; b < bin; b++) {
-					if ((float)Scalar(source[img].at<Vec3b>(i, j)).val[1] <= (float((b + 1) * 255)) / bin) {
-						colorProbability.at<float>(1, b) += 1.;
+					if ((double)Scalar((*images)[img].at<Vec3b>(i, j)).val[1] <= (double((b + 1) * 255)) / bin) {
+						colorProbability.at<double>(1, b) += 1.;
 						break;
 					}
 					if (b == bin - 1) {
-						cout << Scalar(source.at(img).at<Vec3b>(i, j)).val[1] << endl;
+						cout << Scalar((*images).at(img).at<Vec3b>(i, j)).val[1] << endl;
 					}
 				}
 				for (int b = 0; b < bin; b++) {
-					if ((float)Scalar(source.at(img).at<Vec3b>(i, j)).val[2] <= (float((b+1) * 255)) / bin) {
-						colorProbability.at<float>(2, b) += 1.;
+					if ((double)Scalar((*images).at(img).at<Vec3b>(i, j)).val[2] <= (double((b+1) * 255)) / bin) {
+						colorProbability.at<double>(2, b) += 1.;
 						break;
 					}
 					if (b == bin - 1) {
-						cout << Scalar(source.at(img).at<Vec3b>(i, j)).val[2] << endl;
+						cout << Scalar((*images).at(img).at<Vec3b>(i, j)).val[2] << endl;
 					}
 				}
 			}
 		}
 	}
 
-	float total= 0;
+	double total= 0;
 	for (int j = 0; j < bin; j++) {
-		total += colorProbability.at<float>(0, j);
+		total += colorProbability.at<double>(0, j);
 	}
 	cout << total << " vs " <<  n*rows*cols<<endl;
 
 	total = 0;
 	for (int j = 0; j < bin; j++) {
-		total += colorProbability.at<float>(1, j);
+		total += colorProbability.at<double>(1, j);
 	}
 	cout << total << " vs " <<  n*rows*cols << endl;
 
 	total = 0;
 	for (int j = 0; j < bin; j++) {
-		total += colorProbability.at<float>(2, j);
+		total += colorProbability.at<double>(2, j);
 	}
 	cout << total << " vs " <<  n*rows*cols << endl;
 
 	for (int color = 0; color < 3; color++) { //c'est necessaire pour maximumLikelyhood
 		for (int b = 0; b < bin; b++) {
-			colorProbability.at<float>(color,b) /= float(rows*cols*n); // on divise pas quantite de pixel selectionne.
-			cout << "values are " << colorProbability.at<float>(color, b) <<endl;
+			colorProbability.at<double>(color,b) /= double(rows*cols*n); // on divise pas quantite de pixel selectionne.
+			cout << "values are " << colorProbability.at<double>(color, b) <<endl;
 		}
 	}
 
 	cout << "done with colorProbability" << endl;
 
 	Mat Label = Mat(rows, cols, CV_32SC1); //on veut stocker les label des differents trucs; comme ca l'image est le pixel de l'image caracterise par son label
-	Mat result = source[0].clone(); //Nous allons stocker l'image resultante
+	Mat result = (*images)[0].clone(); //Nous allons stocker l'image resultante
 	for (int i = 0; i < rows; i++) {
 		for (int j = 0; j < cols; j++) {
 			Label.at<int>(i, j) = 0; // l'image resultat est d'abord initialiser a l'image zero
@@ -281,53 +279,54 @@ int main()
 	namedWindow("previous_result", WINDOW_NORMAL | WINDOW_KEEPRATIO);
 	namedWindow("current_result", WINDOW_NORMAL | WINDOW_KEEPRATIO);
 	imshow("previous_result", result);
-	float previous_max_flow = 0.;
-	float current_max_flow = 0.;
+	double previous_max_flow = 0.;
+	double current_max_flow = 0.;
 	int lab = 1;
-	while(previous_max_flow > current_max_flow) { //loop over all possible labels
+	while(lab <= 2 || previous_max_flow > current_max_flow) { //loop over all possible labels
+		lab++;
 		cout << "Start graph cut" << endl;
 		for (int alpha = 0; alpha < n; alpha++) {
 
-			Graph<float, float, float> g(/*estimated # of nodes*/ rows*cols, /*estimated # of edges*/ rows*(cols - 1) + cols*(rows - 1));
+			Graph<double, double, double> g(/*estimated # of nodes*/ rows*cols, /*estimated # of edges*/ rows*(cols - 1) + cols*(rows - 1));
 			g.add_node(rows*cols);
 			for (int i = 0; i < rows; i++)
 			{
 				for (int j = 0; j < cols; j++)
 				{
-					float temp_curr = maximumLikelyhood(Label.at<int>(i, j), i, j, source, colorProbability);
-					float temp_alpha = maximumLikelyhood(alpha, i, j, source, colorProbability);
+					double temp_curr = maximumLikelyhood(Label.at<int>(i, j), i, j, *images, colorProbability);
+					double temp_alpha = maximumLikelyhood(alpha, i, j, *images, colorProbability);
 					//cout << 100000*temp_curr << " " << 10000*temp_alpha << endl;
-					/*cout << maximumLikelyhood(Label.at<int>(i, j), i, j, source, colorProbability) << endl;
-					cout << maximumLikelyhood(alpha, i, j, source, colorProbability) << endl;*/
+					/*cout << maximumLikelyhood(Label.at<int>(i, j), i, j, *images, colorProbability) << endl;
+					cout << maximumLikelyhood(alpha, i, j, *images, colorProbability) << endl;*/
 					g.add_tweights(i*cols + j, temp_curr, temp_alpha);
 				}
 			}
 			for (int i = 0; i < rows; i++) {
 				for (int j = 0; j < cols; j++) {
 					if (i > 0) {
-						//float temp1 = computeX(alpha, i, j, Label.at<int>(i, j), i - 1, j, source); //je sais pas si ici on doit mette Label.at<int>(i,j) ... ca doit etre la que vient le label_opt = label/2
-						float temp1 = lambda_Y *computeY(alpha, i, j, Label.at<int>(i, j), i - 1, j, source) + lambda_X *computeX(alpha, i, j, Label.at<int>(i, j), i - 1, j, source);
-						//float temp2 = computeX(alpha, i, j, Label.at<int>(i-1, j), i - 1, j, source);
-						float temp2 = lambda_Y *computeY(alpha, i, j, Label.at<int>(i - 1, j), i - 1, j, source) + lambda_X *computeX(alpha, i, j, Label.at<int>(i - 1, j), i - 1, j, source);
-						g.add_edge((i - 1)*cols + j, i*cols + j, temp1, temp2);
+						//double temp1 = computeX(alpha, i, j, Label.at<int>(i, j), i - 1, j, *images); //je sais pas si ici on doit mette Label.at<int>(i,j) ... ca doit etre la que vient le label_opt = label/2
+						double temp1 = lambda_Y *computeY(alpha, i, j, Label.at<int>(i, j), i - 1, j, *images) + lambda_X *computeX(alpha, i, j, Label.at<int>(i, j), i - 1, j, *images);
+						//double temp2 = computeX(alpha, i, j, Label.at<int>(i-1, j), i - 1, j, *images);
+						double temp2 = lambda_Y *computeY(alpha, i, j, Label.at<int>(i - 1, j), i - 1, j, *images) + lambda_X *computeX(alpha, i, j, Label.at<int>(i - 1, j), i - 1, j, *images);
+						g.add_edge((i - 1)*cols + j, i*cols + j, temp2, temp1);
 					}
 					if (j > 0) {
-						//float temp1 = computeX(alpha, i, j, Label.at<int>(i, j ), i, j - 1, source);
-						float temp1 = lambda_Y *computeY(alpha, i, j, Label.at<int>(i, j), i, j - 1, source) + lambda_X *computeX(alpha, i, j, Label.at<int>(i, j), i, j - 1, source);
-						//float temp2 = computeX(alpha, i, j, Label.at<int>(i, j-1), i, j - 1, source);
-						float temp2 = lambda_Y *computeY(alpha, i, j, Label.at<int>(i, j - 1), i, j - 1, source) + lambda_X *computeX(alpha, i, j, Label.at<int>(i, j - 1), i, j - 1, source);
-						g.add_edge(i*cols + j - 1, i*cols + j, temp1, temp2);
+						//double temp1 = computeX(alpha, i, j, Label.at<int>(i, j ), i, j - 1, *images);
+						double temp1 = lambda_Y *computeY(alpha, i, j, Label.at<int>(i, j), i, j - 1, *images) + lambda_X *computeX(alpha, i, j, Label.at<int>(i, j), i, j - 1, *images);
+						//double temp2 = computeX(alpha, i, j, Label.at<int>(i, j-1), i, j - 1, *images);
+						double temp2 = lambda_Y *computeY(alpha, i, j, Label.at<int>(i, j - 1), i, j - 1, *images) + lambda_X *computeX(alpha, i, j, Label.at<int>(i, j - 1), i, j - 1, *images);
+						g.add_edge(i*cols + j - 1, i*cols + j, temp2, temp1);
 					}
 				}
 			}
-			float flow = g.maxflow();
+			double flow = g.maxflow();
 			if (alpha == n - 1) {
 				previous_max_flow = current_max_flow;
 				current_max_flow = flow;
 			}
 			cout << "Flow = " << flow << endl;
 			for (int i = 0; i < rows*cols; i++) {
-				if (g.what_segment(i) == Graph<float, float, float>::SOURCE) { //source : we keep label sink : we change label to alpha
+				if (g.what_segment(i) == Graph<double, double, double>::SOURCE) { //source : we keep label sink : we change label to alpha
 					// cout << "huh" << endl;
 					int ligne = i / cols;
 					int colonne = i%cols;
@@ -340,7 +339,7 @@ int main()
 		cout << "display end" << endl;
 		for (int i = 0; i < rows; i++) {
 			for (int j = 0; j < cols; j++) {
-				result.at<Vec3b>(i, j) = source.at(Label.at<int>(i, j)).at<Vec3b>(i, j);
+				result.at<Vec3b>(i, j) = (*images).at(Label.at<int>(i, j)).at<Vec3b>(i, j);
 			}
 		}
 		
@@ -350,6 +349,8 @@ int main()
 		imshow("previous_result", result);
 	}
 	
+	imwrite("./Images/result/maximum_likelihood_Rita.jpg", result);
+
 	//
 	//for (int i = 0; i < rows; i++) {
 	//	for (int j = 0; j < cols; j++) {
@@ -359,9 +360,6 @@ int main()
 	//		}
 	//	}
 	//}
-
-	testGCuts();
-	namedWindow("result");
 
 	waitKey(0);
 	return 0;
