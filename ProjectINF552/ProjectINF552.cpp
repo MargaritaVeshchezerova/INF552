@@ -29,26 +29,6 @@ void testGCuts()
 			cout << i << " is in the SINK set" << endl;
 }
 
-double designatedColor(int alpha, int i, int j, vector<Mat>& source, Mat& Label)
-{
-	return(norm(Scalar(source.at(alpha).at<Vec3b>(i, j) - source.at(Label.at<int>(i, j)).at<Vec3b>(i, j))));
-}
-
-double computeDesignatedColorDataPenalty(int alpha, vector<Mat>& source, Mat& Label)
-{
-	double dataPenalty = 0.;
-
-	Scalar Poisson(255, 255, 255, 0); //la cathedrale est blanche
-	Scalar Eau(0, 0, 0, 0); // les hommes sont noirs, ca ne marchera pas car pas tous les hommes sont noirs, c'est pour tester le truc
-
-	for (int i = 0; i < Label.rows; i++) {
-		for (int j = 0; j < Label.cols; j++) {
-			dataPenalty += designatedColor(alpha, i, j, source, Label);
-		}
-	}
-	return dataPenalty;
-}
-
 double maximumLikelyhood(int alpha, int i, int j, vector<Mat>& source, Mat& colorProbability) {
 	
 	double probability = 1.;
@@ -59,16 +39,6 @@ double maximumLikelyhood(int alpha, int i, int j, vector<Mat>& source, Mat& colo
 	return(1 - probability);
 }
 
-double computeMaximumLikelyhood(int alpha, vector<Mat>& source, Mat&Label, Mat& colorProbability) {
-	double dataPenalty = 0.;
-
-	for (int i = 0; i < Label.rows; i++) {
-		for (int j = 0; j < Label.cols; j++) {
-			dataPenalty += maximumLikelyhood(alpha, i, j, source, colorProbability);
-		}
-	}
-	return dataPenalty;
-}
 
 double computeX(int alpha1, int i1, int j1,int alpha2, int i2, int j2, vector<Mat>&source) {
 	if (alpha1 == alpha2) {
@@ -99,42 +69,9 @@ double computeY(int alpha1, int i1, int j1, int alpha2, int i2, int j2, vector<M
 	}
 }
 
-
-struct MouseParams
-{
-	Mat* img;
-	int* draw;
-	MouseParams(Mat* img1 , int* draw1) {
-		img = img1;
-		draw = draw1;
-	}
-};
-
-void draw_circle(int event, int x, int y, int, void* param) {
-	MouseParams* mp = (MouseParams*)param;
-	Mat* img = mp->img;
-	if (event == CV_EVENT_MOUSEMOVE)
-	{
-		if (*mp->draw == 1) {
-			circle(*img, Point(x, y), 10, Scalar(255, 255, 255),-1);
-		}
-	}
-	else if (event == CV_EVENT_LBUTTONDOWN) {
-		*mp->draw = 1;
-	}
-	else if (event = CV_EVENT_LBUTTONUP) {
-		*mp->draw = 0;
-	}
-}
-
-
 int main(int argc, char** argv)
 {
-	vector<Mat> source;
-	vector<int> drawing;
-	vector<MouseParams> mps;
-	
-	testGCuts();
+	testGCuts(); //test whether graph-cut.h is well implemented
 
 
 	 //nombre d'images source afin de creer la nouvelle image
@@ -165,30 +102,9 @@ int main(int argc, char** argv)
 	loadDatabase(argv[1], *images);
 	int n = images->size();
 
-	/*for (int i = 0; i < n; i++) {
-		MouseParams* mp = new MouseParams(*images.at(i), &drawing.at(i));
-		setMouseCallback("d00" + to_string(i + 1), draw_circle, (void*)mp);
-	}*/
-
-	//for (int i = 0; i < 300; i++) {
-	//	for (int j = 0; j < 300; j++) {
-	//		*images.at(0).at<Vec3b>(i, j) = Vec3b(255, 255, 255);
-	//		imshow("d001", *images.at(0));
-	//	}
-	//}
-
-	/*while (waitKey(20) != 27)
-	{
-		for (int i = 0; i < n; i++) {
-			imshow("d00" + to_string(i + 1), *images.at(i));
-		}
-	}*/
-
 	cout << "Images have been loaded" << endl;
 
-
-
-
+	//on construit les histogrammes des couleurs
 	int rows = (*images)[0].rows;
 	int cols = (*images)[0].cols;
 	Mat colorProbability = Mat(3, bin,CV_64F); //pour chaque couleur on fait un histogramme avec bin nombre de colonnes (on divises 255 par bin)
@@ -205,13 +121,6 @@ int main(int argc, char** argv)
 		for (int i = 0; i < rows; i++) {
 			for (int j = 0; j < cols; j++) {
 				for (int b = 0; b < bin; b++) {
-					//cout << *images.at(img).at<Vec3b>(i, j) << endl;
-					//cout << ((double)Scalar(*images.at(img).at<Vec3b>(i, j)).val[0] < 255) << endl;
-					//cout << ((double)Scalar(*images.at(img).at<Vec3b>(i, j)).val[0] < 0) << endl;
-
-					//cout << Scalar(*images.at(img).at<Vec3b>(i, j)).val[1] << endl;
-					//cout << Scalar(*images.at(img).at<Vec3b>(i, j)).val[2] << endl;
-					//cout << "///////////////////////////////////////////////" << endl;
 					if ((double)Scalar((*images)[img].at<Vec3b>(i, j)).val[0] <= (double((b + 1) * 255)) / bin) { //en fait ici il ne faut selectionner que les parties prises je pense, je me suis trompe
 						colorProbability.at<double>(0, b) += 1.;
 						break;
@@ -269,6 +178,7 @@ int main(int argc, char** argv)
 
 	cout << "done with colorProbability" << endl;
 
+	//alpha-extension graph-cut
 	Mat Label = Mat(rows, cols, CV_32SC1); //on veut stocker les label des differents trucs; comme ca l'image est le pixel de l'image caracterise par son label
 	Mat result = (*images)[0].clone(); //Nous allons stocker l'image resultante
 	for (int i = 0; i < rows; i++) {
@@ -350,16 +260,6 @@ int main(int argc, char** argv)
 	}
 	
 	imwrite("./Images/result/maximum_likelihood_Rita.jpg", result);
-
-	//
-	//for (int i = 0; i < rows; i++) {
-	//	for (int j = 0; j < cols; j++) {
-	//		if (Label.at<int>(i, j) != 0) {
-	//			cout << Label.at<int>(i, j) << endl;
-
-	//		}
-	//	}
-	//}
 
 	waitKey(0);
 	return 0;
